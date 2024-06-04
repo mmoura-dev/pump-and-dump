@@ -106,7 +106,7 @@ get_event_datetime <- function(pump_history_file_name) {
     10800, units = "secs"))
 }
 
-cache_pump_time_series <- function(pump_file, chunk_size, timeframe, file_name) {
+cache_pump_time_series <- function(pump_file, chunk_size, file_name) {
   event_datetime <- get_event_datetime(pump_file)
   orders_history_df <- read.csv(paste0(BASE_PATH,
                                        "lamorgia/binance_orders_history/",
@@ -134,12 +134,11 @@ cache_pump_time_series <- function(pump_file, chunk_size, timeframe, file_name) 
             row.names = FALSE)
 }
 
-get_pump_time_series <- function(pump_file_name, chunk_size, timeframe) {
+get_pump_time_series <- function(pump_file_name, chunk_size) {
 
-  path <- paste0(BASE_PATH, "cached_data/pre_processed_series/", "cs-",
-                 chunk_size, "_tf-", timeframe, "/")
-  target_file_name <- paste0(pump_file_name, "_", chunk_size, "_", timeframe,
-                             ".csv")
+  path <- paste0(BASE_PATH, "cached_data/pre_processed_series/", "chunk_size-",
+                 chunk_size, "/")
+  target_file_name <- paste0(pump_file_name, "_", chunk_size, "s", ".csv")
   
   if (!(target_file_name %in% list.files(path, pattern = "*.csv"))) {
     print(paste(target_file_name, "cache miss"))
@@ -149,7 +148,7 @@ get_pump_time_series <- function(pump_file_name, chunk_size, timeframe) {
     }
     
     cache_pump_time_series(paste0(pump_file_name, ".csv"), chunk_size,
-                           timeframe, paste0(path, target_file_name))
+                           paste0(path, target_file_name))
   }
 
   return(read.csv(paste0(path, target_file_name)))
