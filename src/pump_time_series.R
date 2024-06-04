@@ -34,7 +34,6 @@ group_orders_by_bin <- function(pristine_df, bins_df) {
   result$num_orders <- as.numeric(result$num_orders)
   result$avg_usd_price <- as.numeric(result$avg_usd_price)
   result$sum_usd_volume <- as.numeric(result$sum_usd_volume)
-  result$cumsum_usd_volume <- cumsum(result$sum_usd_volume)
   
   return(result)
 }
