@@ -9,4 +9,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     return(as.numeric(c(dont_ask_me[2], dont_ask_me[5], dont_ask_me[6],
                         dont_ask_me[3])))
   }
+  else {
+    stop(paste("Invalid strategy_name:", strategy_name))
+  }
 }
