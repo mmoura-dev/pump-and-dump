@@ -1,7 +1,6 @@
 get_strategy_result <- function(df, strategy_name, series_name = NULL) {
-  BASE_MODELS <- c("ARIMA", "GARCH", "EMD", "REMD", "CHOW", "GFT")
 
-  if (strategy_name %in% BASE_MODELS && !is.null(series_name)) {
+  if (strategy_name %in% MODELS_AVAILABLE && !is.null(series_name)) {
     series <- get_series(df, series_name)
     model <- fit(build_model(strategy_name), series)
     detection <- detect(model, series)

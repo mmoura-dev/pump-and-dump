@@ -1,3 +1,6 @@
+MODELS_AVAILABLE <- c("ARIMA", "GARCH", "RED", "EMD", "REMD", "CHOW", "GFT")
+
+
 build_model <- function(model_name) {
   if (model_name == "ARIMA") {
     return(hanr_arima())
