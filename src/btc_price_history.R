@@ -4,6 +4,9 @@
 #     Example: Sys.setenv(API_KEY = "your_api_key_here")
 # =============================================================================
 
+library(httr)
+library(jsonlite)
+
 
 get_btc_price_history <- function(start_timestamp, end_timestamp) {
   
