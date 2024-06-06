@@ -28,7 +28,9 @@ group_orders_by_bin <- function(pristine_df, bins_df) {
               sum_usd_volume = sum(usd_volume))
   
   result <- left_join(bins_df, grp_df, by = "bin")
+  result$avg_usd_price <- na.locf(result$avg_usd_price, na.rm = FALSE)
   result$sum_usd_volume[is.na(result$sum_usd_volume)] <- 0
+  result$num_orders[is.na(result$num_orders)] <- 0
   result <- as.data.frame(result)
   
   result$num_orders <- as.numeric(result$num_orders)
