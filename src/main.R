@@ -1,8 +1,11 @@
 BASE_PATH = "~/pump-and-dump/"
+PLOTTING = FALSE
 
 library(dplyr)
 library(daltoolbox) 
 library(harbinger)
+library(ggplot2)
+library(zoo)
 
 source(paste0(BASE_PATH, "src/btc_price_history.R"))
 source(paste0(BASE_PATH, "src/pump_time_series.R"))
@@ -64,4 +67,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-# pump_main(3600, "REMD", "PRICE")
+pump_main(3600, "REMD", "PRICE")
