@@ -103,8 +103,7 @@ get_event_datetime <- function(pump_history_file_name) {
   event_time_str <- gsub("\\.", ":", gsub(".csv", "", splitted_file_name[3]))
   event_datetime_str <- paste(splitted_file_name[2], event_time_str)
 
-  return(as.POSIXct(event_datetime_str, tz = "UTC") + as.difftime(
-    10800, units = "secs"))
+  return(as.POSIXct(event_datetime_str, tz = "UTC"))
 }
 
 cache_pump_time_series <- function(pump_file, chunk_size, file_name) {
