@@ -1,22 +1,40 @@
-get_series <- function(df, series_name) {
+preprocess_data <- function(df, series_name) {
+  df <- data_cleaning(df)
+  event_column <- df$event
+  
   if (series_name == "PRICE") {
-    return(df$avg_usd_price)
+    series_column <- df$avg_usd_price
   }
+
   else if (series_name == "VOLUME") {
-    return(df$sum_usd_volume)
+    series_column <- df$sum_usd_volume
   }
+
   else if (series_name == "ORDERS") {
-    return(df$num_orders)
+    series_column <- df$num_orders
   }
+
   else if (series_name == "VOLUME_CUMSUM") {
-    return(cumsum(df$sum_usd_volume))
+    series_column <- cumsum(df$sum_usd_volume)
   }
+
   else if (series_name == "ORDERS_CUMSUM") {
-    return(cumsum(df$num_orders))
+    series_column <- cumsum(df$num_orders)
   }
+
+  else if (series_name == "PRICE_DIFF") {
+    series_column <- diff(df$avg_usd_price)
+    event_column <- event_column[2:length(event_column)]
+  }
+
   else {
     stop("Invalid: series_name")
   }
+  
+  return(data.frame(
+    series = series_column,
+    event = event_column
+  ))
 }
 
 data_cleaning <- function(data) {

@@ -35,7 +35,6 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   i <- 1
   for (file_name in file_names) {
     data <- get_pump_time_series(file_name, chunk_size)
-    data <- data_cleaning(data)
     hard_metrics[i, 2:ncol(hard_metrics)] <- get_strategy_result(data,
                                                                  strategy_name,
                                                                  series_name)
@@ -67,4 +66,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "REMD", "PRICE")
+pump_main(3600, "LEFT_REMD", "PRICE_DIFF")

@@ -1,14 +1,28 @@
 get_strategy_result <- function(df, strategy_name, series_name = NULL) {
 
   if (strategy_name %in% MODELS_AVAILABLE && !is.null(series_name)) {
-    series <- get_series(df, series_name)
+    data <- preprocess_data(df, series_name)
+    series <- data$series
     model <- fit(build_model(strategy_name), series)
     detection <- detect(model, series)
-    conf_matrix <- evaluate(model, detection$event, df$event)$confMatrix
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
+
   else if (strategy_name == "LEFT_REMD" && !is.null(series_name)) {
-    conf_matrix <- left_remd_conf_matrix(df, series_name)
+    data <- preprocess_data(df, series_name)
+    series <- data$series
+    model <- fit(build_model("REMD"), series)
+    detection <- detect(model, series)
+    event_true_indexes <- filter(detection, event == TRUE)$idx
+
+    for (index in event_true_indexes) {
+      left_index <- max(min(length(series), index - 1), 1)
+      detection$event[left_index] <- TRUE
+    }
+
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
+
   else {
     stop(paste("Invalid strategy_name:", strategy_name))
   }
@@ -25,7 +39,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
       plot_number <- max(plot_numbers, na.rm = TRUE) + 1
     }
 
-    grf <- har_plot(model, series, detection, df$event)
+    grf <- har_plot(model, series, detection, data$event)
     ggsave(paste0(BASE_PATH, "plots/plot_", plot_number, ".pdf"), plot = grf)
   }
   
@@ -33,18 +47,3 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
   return(as.numeric(c(dont_ask_me[2], dont_ask_me[5], dont_ask_me[6],
                       dont_ask_me[3])))
 }
-
-left_remd_conf_matrix <- function(df, series_name) {
-  series <- get_series(df, series_name)
-  model <- fit(build_model("REMD"), series)
-  detection <- detect(model, series)
-  event_true_indexes <- filter(detection, event == TRUE)$idx
-  
-  for (index in event_true_indexes) {
-    left_index <- max(min(length(series), index - 1), 1)
-    detection$event[left_index] <- TRUE
-  }
-  
-  return(evaluate(model, detection$event, df$event)$confMatrix)
-}
-
