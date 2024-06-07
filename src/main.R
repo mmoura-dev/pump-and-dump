@@ -67,4 +67,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "LEFT_REMD", "PRICE_DIFF")
+pump_main(3600, "EVIDENT_PUMP2")
