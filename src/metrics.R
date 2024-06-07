@@ -9,7 +9,7 @@ calculate_metrics <- function(df) {
   df$f1_score <- with(df,
                       ifelse((precision + recall) > 0,
                              2 * (precision * recall) / (precision + recall),
-                             NA))
+                             0))
 
   return(df)
 }
