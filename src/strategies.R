@@ -22,6 +22,23 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
 
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
+  
+  else if (strategy_name == "RECALL_GFT" && series_name %in% c("ORDERS_CUMSUM", "VOLUME_CUMSUM")) {
+    data <- preprocess_data(df, series_name)
+    series <- data$series
+    model <- fit(build_model("GFT"), series)
+    detection <- detect(model, series)
+    event_true_indexes <- filter(detection, event == TRUE)$idx
+    
+    for (index in event_true_indexes) {
+      left <- max(min(length(series), index - 1), 1)
+      right <- max(min(length(series), index + 1), 1)
+      detection$event[left] <- TRUE
+      detection$event[right] <- TRUE
+    }
+    
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+  }
 
   else {
     stop(paste("Invalid strategy_name:", strategy_name))
