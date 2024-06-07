@@ -1,4 +1,5 @@
-MODELS_AVAILABLE <- c("ARIMA", "GARCH", "RED", "EMD", "REMD", "CHOW", "GFT")
+MODELS_AVAILABLE <- c("ARIMA", "GARCH", "RED", "EMD", "REMD", "CHOW", "GFT",
+                      "CP_GARCH")
 
 
 build_model <- function(model_name) {
@@ -22,7 +23,11 @@ build_model <- function(model_name) {
   }
   else if (model_name == "GFT") {
     return (hcp_gft())
-  } else {
+  }
+  else if (model_name == "CP_GARCH") {
+    return(hcp_garch())
+  }
+  else {
     stop(paste("Model not found:", model_name))
   }
 }
