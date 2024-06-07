@@ -54,7 +54,8 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
     avg_accuracy = mean(hard_metrics$accuracy, na.rm = TRUE),
     avg_precision = mean(hard_metrics$precision, na.rm = TRUE),
     avg_recall = mean(hard_metrics$recall, na.rm = TRUE),
-    avg_f1_score = mean(hard_metrics$f1_score, na.rm = TRUE)
+    avg_f1_score = mean(hard_metrics$f1_score, na.rm = TRUE),
+    support = length(file_names)
   )
 
   print(result)
