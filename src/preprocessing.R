@@ -38,5 +38,14 @@ preprocess_data <- function(df, series_name) {
 }
 
 data_cleaning <- function(data) {
+  timeframe <- NULL
+  
+  if (!is.null((timeframe))) {
+    pump_datetime <- as.POSIXct(data[data$event == TRUE, "bin"])
+    frame_start <- pump_datetime - as.difftime(timeframe, units = "secs")
+    frame_end <- pump_datetime + as.difftime(timeframe, units = "secs")
+    data <- data[data$bin >= frame_start & data$bin <= frame_end, ]
+  }
+  
   return(data[-c(1, nrow(data)), ])
 }
