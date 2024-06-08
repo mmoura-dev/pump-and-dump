@@ -64,6 +64,55 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
 
+  else if (strategy_name == "MASTER_LEAGUE") {
+    data <- preprocess_data(df, "VOLUME_CUMSUM")
+    series <- data$series
+    model <- fit(build_model("GFT"), series)
+    detection <- detect(model, series)
+    event_true_indexes <- filter(detection, event == TRUE)$idx
+    
+    for (index in event_true_indexes) {
+      left <- max(min(length(series), index - 1), 1)
+      right <- max(min(length(series), index + 1), 1)
+      detection$event[left] <- TRUE
+      detection$event[right] <- TRUE
+    }
+    
+    volume_cumsum_df <- preprocess_data(df, "VOLUME_CUMSUM")
+    volume_cumsum <- volume_cumsum_df$series
+    chow <- fit(build_model("CHOW"), volume_cumsum)
+    chow_detection <- detect(chow, volume_cumsum)
+    
+    # Recall GFT over orders
+    # orders_cumsum_df <- preprocess_data(df, "ORDERS_CUMSUM")
+    # orders_cumsum <- orders_cumsum_df$series
+    # gft_orders <- fit(build_model("GFT"), orders_cumsum)
+    # gft_detection <- detect(gft_orders, orders_cumsum)
+    # event_true_indexes <- filter(gft_detection, event == TRUE)$idx
+    # for (index in event_true_indexes) {
+    #   left <- max(min(length(orders_cumsum), index - 1), 1)
+    #   right <- max(min(length(orders_cumsum), index + 1), 1)
+    #   gft_detection$event[left] <- TRUE
+    #   gft_detection$event[right] <- TRUE
+    # }
+    
+    # Left REMD
+    price_df <- preprocess_data(df, "PRICE")
+    price <- price_df$series
+    left_remd <- fit(build_model("REMD"), price)
+    left_remd_detection <- detect(left_remd, price)
+    event_true_indexes <- filter(left_remd_detection, event == TRUE)$idx
+    for (index in event_true_indexes) {
+      left <- max(min(length(price), index - 1), 1)
+      left_remd_detection$event[left] <- TRUE
+    }
+    
+    detection$event <- (detection$event & chow_detection$event) | (detection$event & left_remd_detection$event)
+    # detection$event <- (detection$event & chow_detection$event) | (detection$event & (gft_detection$event | left_remd_detection$event))
+    detection$type <- chow_detection$type
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+  }
+
   else {
     stop(paste("Invalid strategy_name:", strategy_name))
   }
