@@ -38,7 +38,7 @@ preprocess_data <- function(df, series_name) {
 }
 
 data_cleaning <- function(data) {
-  timeframe <- NULL
+  timeframe <- TIMEFRAME_IN_SECONDS
   
   if (!is.null((timeframe))) {
     pump_datetime <- as.POSIXct(data[data$event == TRUE, "bin"])
