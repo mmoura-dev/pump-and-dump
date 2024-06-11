@@ -70,8 +70,14 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     model <- fit(build_model("GFT"), series)
     detection <- detect(model, series)
     event_true_indexes <- filter(detection, event == TRUE)$idx
-    
+
+    count <- 0
     for (index in event_true_indexes) {
+      count <- count + 1
+      if (count %% 2 == 0) {
+        next
+      }
+  
       left <- max(min(length(series), index - 1), 1)
       right <- max(min(length(series), index + 1), 1)
       detection$event[left] <- TRUE
