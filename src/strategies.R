@@ -82,6 +82,11 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     volume_cumsum <- volume_cumsum_df$series
     chow <- fit(build_model("CHOW"), volume_cumsum)
     chow_detection <- detect(chow, volume_cumsum)
+    event_true_indexes <- filter(chow_detection, event == TRUE)$idx
+    for (index in event_true_indexes) {
+      right <- max(min(length(volume_cumsum), index + 1), 1)
+      chow_detection$event[right] <- TRUE
+    }
     
     # Left REMD
     price_df <- preprocess_data(df, "PRICE")

@@ -1,0 +1,2 @@
+"strategy","chunk_size","avg_accuracy","avg_precision","avg_recall","avg_f1_score","support"
+"MASTER_LEAGUE",3600,0.980535114965292,0.401839002267574,0.910112359550562,0.544589569160998,178
