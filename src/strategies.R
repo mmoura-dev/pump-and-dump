@@ -77,7 +77,8 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
       detection$event[left] <- TRUE
       detection$event[right] <- TRUE
     }
-    
+
+    # Right Chow
     volume_cumsum_df <- preprocess_data(df, "VOLUME_CUMSUM")
     volume_cumsum <- volume_cumsum_df$series
     chow <- fit(build_model("CHOW"), volume_cumsum)
@@ -88,18 +89,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
       chow_detection$event[right] <- TRUE
     }
     
-    # Left REMD
-    price_df <- preprocess_data(df, "PRICE")
-    price <- price_df$series
-    left_remd <- fit(build_model("REMD"), price)
-    left_remd_detection <- detect(left_remd, price)
-    event_true_indexes <- filter(left_remd_detection, event == TRUE)$idx
-    for (index in event_true_indexes) {
-      left <- max(min(length(price), index - 1), 1)
-      left_remd_detection$event[left] <- TRUE
-    }
-    
-    detection$event <- (detection$event & chow_detection$event) | (detection$event & left_remd_detection$event)
+    detection$event <- (detection$event & chow_detection$event)
     detection$type <- chow_detection$type
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
