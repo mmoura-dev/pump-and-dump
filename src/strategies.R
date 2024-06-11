@@ -83,19 +83,6 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     chow <- fit(build_model("CHOW"), volume_cumsum)
     chow_detection <- detect(chow, volume_cumsum)
     
-    # Recall GFT over orders
-    # orders_cumsum_df <- preprocess_data(df, "ORDERS_CUMSUM")
-    # orders_cumsum <- orders_cumsum_df$series
-    # gft_orders <- fit(build_model("GFT"), orders_cumsum)
-    # gft_detection <- detect(gft_orders, orders_cumsum)
-    # event_true_indexes <- filter(gft_detection, event == TRUE)$idx
-    # for (index in event_true_indexes) {
-    #   left <- max(min(length(orders_cumsum), index - 1), 1)
-    #   right <- max(min(length(orders_cumsum), index + 1), 1)
-    #   gft_detection$event[left] <- TRUE
-    #   gft_detection$event[right] <- TRUE
-    # }
-    
     # Left REMD
     price_df <- preprocess_data(df, "PRICE")
     price <- price_df$series
@@ -108,7 +95,6 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     }
     
     detection$event <- (detection$event & chow_detection$event) | (detection$event & left_remd_detection$event)
-    # detection$event <- (detection$event & chow_detection$event) | (detection$event & (gft_detection$event | left_remd_detection$event))
     detection$type <- chow_detection$type
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
