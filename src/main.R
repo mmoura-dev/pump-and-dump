@@ -22,7 +22,10 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
     pattern = "*.csv",
     full.names = TRUE))
   file_names <- gsub(".csv", "", file_names)
-  # file_names <- file_names[1:10]
+  
+  la_morgia_used_files <- read.csv(
+    paste0(BASE_PATH, "lamorgia/lamorgia_used_pumps.csv"))$file_name
+  file_names <- la_morgia_used_files
 
   hard_metrics <- data.frame(
     file_name = file_names,
@@ -67,4 +70,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "EVIDENT_PUMP2")
+pump_main(3600, "MASTER_LEAGUE")
