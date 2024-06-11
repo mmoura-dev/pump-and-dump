@@ -94,6 +94,35 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
 
+  else if (strategy_name == "SUPER_DIFF") {
+    data <- preprocess_data(df, "PRICE_DIFF")
+    series <- data$series
+    model <- fit(build_model("GARCH"), series)
+    detection <- detect(model, series)
+    event_true_indexes <- filter(detection, event == TRUE)$idx
+    
+    for (index in event_true_indexes) {
+      left <- max(min(length(series), index - 1), 1)
+      detection$event[left] <- TRUE
+      detection$event[left + 1] <- FALSE
+    }
+    event_true_indexes <- filter(detection, event == TRUE)$idx
+
+    # RED
+    red <- fit(build_model("RED"), series)
+    red_detection <- detect(red, series)
+    red_event_true_indexes <- filter(red_detection, event == TRUE)$idx
+    red_detection_plus <- red_detection
+    for (index in red_event_true_indexes) {
+      left <- max(min(length(series), index - 1), 1)
+      red_detection_plus$event[left] <- TRUE
+      red_detection_plus$event[left + 1] <- FALSE
+    }
+
+    detection$event <- (detection$event & red_detection$event) | (detection$event & red_detection_plus$event)
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+  }
+
   else {
     stop(paste("Invalid strategy_name:", strategy_name))
   }
