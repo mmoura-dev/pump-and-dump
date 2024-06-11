@@ -40,17 +40,17 @@ group_orders_by_bin <- function(pristine_df, bins_df) {
   return(result)
 }
 
-generate_bins_df <- function(pristine_df, chunk_size) {
+generate_bins_df <- function(pristine_df, chunk_size, event_datetime) {
   datetime_range <- range(pristine_df$datetime)
   amplitude_in_seconds <- as.numeric(diff(datetime_range), units = "secs")
   number_of_bins <- round(amplitude_in_seconds / chunk_size)
   
-  result <- data.frame(
-    bin = seq(datetime_range[1], datetime_range[2],
-              by = as.difftime(chunk_size, units = "secs"))
-  )
+  before_event <- rev(seq(event_datetime, datetime_range[1],
+                by = -as.difftime(chunk_size, units = "secs")))
+  after_event <- seq(event_datetime, datetime_range[2],
+               by = as.difftime(chunk_size, units = "secs"))
   
-  return(result)
+  return(data.frame(bin = c(before_event, after_event)))
 }
 
 generate_bin_column <- function(pristine_df, bin_df, chunk_size) {
@@ -124,7 +124,7 @@ cache_pump_time_series <- function(pump_file, chunk_size, file_name) {
   pristine_df <- merge_buy_orders_and_btc_prices(buy_orders_history_df,
                                                  btc_usd_price_history)
   
-  bins_df <- generate_bins_df(pristine_df, chunk_size)
+  bins_df <- generate_bins_df(pristine_df, chunk_size, event_datetime)
   pristine_df$bin <- generate_bin_column(pristine_df, bins_df, chunk_size)
   result <- group_orders_by_bin(pristine_df, bins_df)
   result <- concat_event_column(result, event_datetime, chunk_size)
