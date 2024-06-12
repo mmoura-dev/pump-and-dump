@@ -22,20 +22,26 @@ concat_event_column <- function(result_df, event_datetime, chunk_size) {
 
 group_orders_by_bin <- function(pristine_df, bins_df) {
   grp_df <- pristine_df %>%
+    group_by(bin, datetime) %>%
+    mutate(rush_orders = n()) %>%
+    ungroup() %>%
     group_by(bin) %>%
     summarise(num_orders = n(),
               avg_usd_price = mean(usd_price),
-              sum_usd_volume = sum(usd_volume))
+              sum_usd_volume = sum(usd_volume),
+              rush_orders = sum(rush_orders > 1))
   
   result <- left_join(bins_df, grp_df, by = "bin")
   result$avg_usd_price <- na.locf(result$avg_usd_price, na.rm = FALSE)
   result$sum_usd_volume[is.na(result$sum_usd_volume)] <- 0
   result$num_orders[is.na(result$num_orders)] <- 0
+  result$rush_orders[is.na(result$rush_orders)] <- 0
   result <- as.data.frame(result)
   
   result$num_orders <- as.numeric(result$num_orders)
   result$avg_usd_price <- as.numeric(result$avg_usd_price)
   result$sum_usd_volume <- as.numeric(result$sum_usd_volume)
+  result$rush_orders <- as.numeric(result$rush_orders)
   
   return(result)
 }
@@ -47,8 +53,9 @@ generate_bins_df <- function(pristine_df, chunk_size, event_datetime) {
   
   before_event <- rev(seq(event_datetime, datetime_range[1],
                 by = -as.difftime(chunk_size, units = "secs")))
-  after_event <- seq(event_datetime, datetime_range[2],
-               by = as.difftime(chunk_size, units = "secs"))
+  after_event <- seq(event_datetime + as.difftime(chunk_size, units = "secs"),
+                     datetime_range[2],
+                     by = as.difftime(chunk_size, units = "secs"))
   
   return(data.frame(bin = c(before_event, after_event)))
 }

@@ -13,6 +13,10 @@ preprocess_data <- function(df, series_name) {
   else if (series_name == "ORDERS") {
     series_column <- df$num_orders
   }
+  
+  else if (series_name == "RUSH_ORDERS") {
+    series_column <- df$rush_orders
+  }
 
   else if (series_name == "VOLUME_CUMSUM") {
     series_column <- cumsum(df$sum_usd_volume)
@@ -24,6 +28,11 @@ preprocess_data <- function(df, series_name) {
 
   else if (series_name == "PRICE_DIFF") {
     series_column <- diff(df$avg_usd_price)
+    event_column <- event_column[2:length(event_column)]
+  }
+  
+  else if (series_name == "RUSH_DIFF") {
+    series_column <- diff(df$rush_orders)
     event_column <- event_column[2:length(event_column)]
   }
 
