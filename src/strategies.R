@@ -25,30 +25,6 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(recall_gft, recall_gft_detection$event,
                             recall_gft_data$event)$confMatrix
   }
-  
-  else if (strategy_name == "EVIDENT_PUMP") {
-    data <- preprocess_data(df, "VOLUME_CUMSUM")
-    series <- data$series
-    model <- fit(build_model("GFT"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      right <- max(min(length(series), index + 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[right] <- TRUE
-    }
-
-    volume_cumsum_df <- preprocess_data(df, "VOLUME_CUMSUM")
-    volume_cumsum <- volume_cumsum_df$series
-    chow <- fit(build_model("CHOW"), volume_cumsum)
-    chow_detection <- detect(chow, volume_cumsum)
-
-    detection$event <- detection$event & chow_detection$event
-    detection$type <- chow_detection$type
-    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
-  }
 
   else if (strategy_name == "MASTER_LEAGUE") {
     data <- preprocess_data(df, "VOLUME_CUMSUM")
