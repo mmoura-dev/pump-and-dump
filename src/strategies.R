@@ -22,6 +22,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     recall_gft <- result$model
     recall_gft_detection <- result$detection
     recall_gft_data <- result$data
+    series <- recall_gft_data$series
     conf_matrix <- evaluate(recall_gft, recall_gft_detection$event,
                             recall_gft_data$event)$confMatrix
   }
@@ -31,6 +32,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     right_chow <- result$model
     right_chow_detection <- result$detection
     right_chow_data <- result$data
+    series <- right_chow_data$series
     conf_matrix <- evaluate(right_chow, right_chow_detection$event,
                             right_chow_data$event)$confMatrix
   }
@@ -40,6 +42,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     model <- result$model
     detection <- result$detection
     data <- result$data
+    series <- data$series
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
 
@@ -49,7 +52,8 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     result <- super_diff_detect(df)
     model <- result$model
     detection <- result$detection
-    data <- result$dat
+    data <- result$data
+    series <- data$series
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
@@ -63,6 +67,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     master_league_model <- result$model
     master_league_detection <- result$detection
     master_league_data <- result$data
+    series <- master_league_data$series
 
     # +1 because diff removes the first observation
     super_diff_true_indexes <- (filter(super_diff_detection,
