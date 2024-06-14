@@ -16,21 +16,14 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
-  else if (strategy_name == "RECALL_GFT" && series_name %in% c("ORDERS_CUMSUM", "VOLUME_CUMSUM")) {
-    data <- preprocess_data(df, series_name)
-    series <- data$series
-    model <- fit(build_model("GFT"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      right <- max(min(length(series), index + 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[right] <- TRUE
-    }
-    
-    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+  else if (strategy_name == "RECALL_GFT" && series_name %in% c("ORDERS_CUMSUM",
+                                                               "VOLUME_CUMSUM")) {
+    result <- recall_gft_detect(df, series_name)
+    recall_gft <- result$model
+    recall_gft_detection <- result$detection
+    recall_gft_data <- result$data
+    conf_matrix <- evaluate(recall_gft, recall_gft_detection$event,
+                            recall_gft_data$event)$confMatrix
   }
   
   else if (strategy_name == "EVIDENT_PUMP") {
@@ -210,6 +203,27 @@ left_remd_detect <- function(df, series_name) {
     detection$event[left_index] <- TRUE
   }
   
+  return(list(
+    model = model,
+    detection = detection,
+    data = data
+  ))
+}
+
+recall_gft_detect <- function(df, series_name) {
+  data <- preprocess_data(df, series_name)
+  series <- data$series
+  model <- fit(build_model("GFT"), series)
+  detection <- detect(model, series)
+  event_true_indexes <- filter(detection, event == TRUE)$idx
+  
+  for (index in event_true_indexes) {
+    left <- max(min(length(series), index - 1), 1)
+    right <- max(min(length(series), index + 1), 1)
+    detection$event[left] <- TRUE
+    detection$event[right] <- TRUE
+  }
+
   return(list(
     model = model,
     detection = detection,
