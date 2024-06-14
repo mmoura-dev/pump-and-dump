@@ -13,6 +13,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     model <- result$model
     detection <- result$detection
     data <- result$data
+    series <- data$series
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
@@ -76,6 +77,15 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     
     conf_matrix <- evaluate(master_league_model, master_league_detection$event,
                             master_league_data$event)$confMatrix
+  }
+
+  else if (strategy_name == "DUMMY") {
+    result <- dummy_detect(df, series_name)
+    model <- result$model
+    detection <- result$detection
+    data <- result$data
+    series <- data$series
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
 
   else {
@@ -205,6 +215,60 @@ super_diff_detect <- function(df) {
     detection = garch_detection,
     data = price_diff_data
   ))
+}
+
+dummy_detect <- function(df, series_name) {
+  data <- preprocess_data(df, series_name)
+  series <- data$series
+  model <- fit(build_model("ARIMA"), series)
+  detection <- detect(model, series)
+  detection$event <- find_outliers(series, 30)
+
+  return(list(
+    model = model,
+    detection = detection,
+    data = data
+  ))
+}
+
+find_outliers <- function(series, k) {
+  calculate_stats <- function(subseq) {
+    return(list(mean = mean(subseq), sd = sd(subseq)))
+  }
+
+  result <- rep(FALSE, length(series))
+
+  for (i in 1:length(series)) {
+    prev_start <- max(1, i - k)
+    prev_end <- i - 1
+    next_start <- i + 1
+    next_end <- min(length(series), i + k)
+
+    if (prev_start < prev_end) {
+      prev_stats <- calculate_stats(series[prev_start:prev_end])
+      prev_mean <- prev_stats$mean
+      prev_sd <- prev_stats$sd
+    } else {
+      prev_mean <- series[i]
+      prev_sd <- 0
+    }
+
+    if (next_start < next_end) {
+      next_stats <- calculate_stats(series[next_start:next_end])
+      next_mean <- next_stats$mean
+      next_sd <- next_stats$sd
+    } else {
+      next_mean <- series[i]
+      next_sd <- 0
+    }
+
+    if (abs(series[i] - prev_mean) > prev_sd &&
+        abs(series[i] - next_mean) > next_sd) {
+      result[i] <- TRUE
+    }
+  }
+
+  return(result)
 }
 
 custom_plot <- function(model, series, detection, data) {
