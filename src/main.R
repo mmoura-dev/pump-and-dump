@@ -1,6 +1,6 @@
 BASE_PATH = "~/pump-and-dump/"
 PLOTTING = FALSE
-TIMEFRAME_IN_SECONDS = 180000 #  If null the entire pump dataset is used
+TIMEFRAME_IN_SECONDS = 200000 #  If null the entire pump dataset is used
 
 library(dplyr)
 library(daltoolbox) 
@@ -73,4 +73,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "RIGHT_CHOW", "VOLUME_CUMSUM")
+pump_main(3600, "SUPER_DIFF")

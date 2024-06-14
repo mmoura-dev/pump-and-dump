@@ -50,31 +50,12 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
   }
 
   else if (strategy_name == "SUPER_DIFF") {
-    data <- preprocess_data(df, "PRICE_DIFF")
-    series <- data$series
-    model <- fit(build_model("GARCH"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[left + 1] <- FALSE
-    }
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-
-    # RED
-    red <- fit(build_model("RED"), series)
-    red_detection <- detect(red, series)
-    red_event_true_indexes <- filter(red_detection, event == TRUE)$idx
-    red_detection_plus <- red_detection
-    for (index in red_event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      red_detection_plus$event[left] <- TRUE
-      red_detection_plus$event[left + 1] <- FALSE
-    }
-
-    detection$event <- (detection$event & red_detection$event) | (detection$event & red_detection_plus$event)
+    # Prefered timeframe: 200000
+    # Has some randomness in precision
+    result <- super_diff_detect(df)
+    model <- result$model
+    detection <- result$detection
+    data <- result$dat
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
@@ -220,6 +201,38 @@ right_chow_detect <- function(df, series_name) {
     model = chow,
     detection = chow_detection,
     data = data
+  ))
+}
+
+super_diff_detect <- function(df) {
+  price_diff_data <- preprocess_data(df, "PRICE_DIFF")
+  price_diff_series <- price_diff_data$series
+  garch <- fit(build_model("GARCH"), price_diff_series)
+  garch_detection <- detect(garch, price_diff_series)
+
+  for (index in filter(garch_detection, event == TRUE)$idx) {
+    left <- max(min(length(price_diff_series), index - 1), 1)
+    garch_detection$event[left] <- TRUE
+    garch_detection$event[left + 1] <- FALSE
+  }
+
+  red <- fit(build_model("RED"), price_diff_series)
+  red_detection <- detect(red, price_diff_series)
+  red_event_true_indexes <- filter(red_detection, event == TRUE)$idx
+  left_red_detection_only <- red_detection
+  for (index in red_event_true_indexes) {
+    left <- max(min(length(price_diff_series), index - 1), 1)
+    left_red_detection_only$event[left] <- TRUE
+    left_red_detection_only$event[left + 1] <- FALSE
+  }
+
+  garch_detection$event <- (garch_detection$event &
+                              red_detection$event) | (garch_detection$event &
+                                                        left_red_detection_only$event)
+  return(list(
+    model = garch,
+    detection = garch_detection,
+    data = price_diff_data
   ))
 }
 
