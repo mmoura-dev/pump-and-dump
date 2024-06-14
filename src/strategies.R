@@ -16,8 +16,7 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
-  else if (strategy_name == "RECALL_GFT" && series_name %in% c("ORDERS_CUMSUM",
-                                                               "VOLUME_CUMSUM")) {
+  else if (strategy_name == "RECALL_GFT") {
     result <- recall_gft_detect(df, series_name)
     recall_gft <- result$model
     recall_gft_detection <- result$detection
@@ -26,34 +25,28 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
                             recall_gft_data$event)$confMatrix
   }
 
+  else if (strategy_name == "RIGHT_CHOW") {
+    result <- right_chow_detect(df, series_name)
+    right_chow <- result$model
+    right_chow_detection <- result$detection
+    right_chow_data <- result$data
+    conf_matrix <- evaluate(right_chow, right_chow_detection$event,
+                            right_chow_data$event)$confMatrix
+  }
+
   else if (strategy_name == "MASTER_LEAGUE") {
-    data <- preprocess_data(df, "VOLUME_CUMSUM")
-    series <- data$series
-    model <- fit(build_model("GFT"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
+    result <- recall_gft_detect(df, series_name)
+    recall_gft <- result$model
+    recall_gft_detection <- result$detection
+    recall_gft_data <- result$data
 
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      right <- max(min(length(series), index + 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[right] <- TRUE
-    }
-
-    # Right Chow
-    volume_cumsum_df <- preprocess_data(df, "VOLUME_CUMSUM")
-    volume_cumsum <- volume_cumsum_df$series
-    chow <- fit(build_model("CHOW"), volume_cumsum)
-    chow_detection <- detect(chow, volume_cumsum)
-    event_true_indexes <- filter(chow_detection, event == TRUE)$idx
-    for (index in event_true_indexes) {
-      right <- max(min(length(volume_cumsum), index + 1), 1)
-      chow_detection$event[right] <- TRUE
-    }
+    result <- right_chow_detect(df, series_name)
+    right_chow_detection <- result$detection
     
-    detection$event <- (detection$event & chow_detection$event)
-    detection$type <- chow_detection$type
-    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+    recall_gft_detection$event <- (recall_gft_detection$event & right_chow_detection$event)
+    recall_gft_detection$type <- right_chow_detection$type
+    conf_matrix <- evaluate(recall_gft, recall_gft_detection$event,
+                            recall_gft_data$event)$confMatrix
   }
 
   else if (strategy_name == "SUPER_DIFF") {
@@ -187,6 +180,8 @@ left_remd_detect <- function(df, series_name) {
 }
 
 recall_gft_detect <- function(df, series_name) {
+  change_point_series_name_validation(series_name)
+
   data <- preprocess_data(df, series_name)
   series <- data$series
   model <- fit(build_model("GFT"), series)
@@ -207,6 +202,27 @@ recall_gft_detect <- function(df, series_name) {
   ))
 }
 
+right_chow_detect <- function(df, series_name) {
+  change_point_series_name_validation(series_name)
+
+  data <- preprocess_data(df, series_name)
+  series <- data$series
+  chow <- fit(build_model("CHOW"), series)
+  chow_detection <- detect(chow, series)
+
+  event_true_indexes <- filter(chow_detection, event == TRUE)$idx
+  for (index in event_true_indexes) {
+    right <- max(min(length(series), index + 1), 1)
+    chow_detection$event[right] <- TRUE
+  }
+
+  return(list(
+    model = chow,
+    detection = chow_detection,
+    data = data
+  ))
+}
+
 custom_plot <- function(model, series, detection, data) {
   plot_files <- basename(list.files(
     path = paste0(BASE_PATH, "plots"),
@@ -223,3 +239,9 @@ custom_plot <- function(model, series, detection, data) {
   ggsave(paste0(BASE_PATH, "plots/plot_", plot_number, ".pdf"), plot = grf)
 }
 
+change_point_series_name_validation <- function(series_name) {
+  if (!(series_name %in% c("ORDERS_CUMSUM", "VOLUME_CUMSUM"))) {
+    print(paste("series_name:", series_name))
+    stop("Invalid series_name for change point strategy.")
+  }
+}
