@@ -1,0 +1,2 @@
+"strategy","chunk_size","avg_accuracy","avg_precision","avg_recall","avg_f1_score","support"
+"SUPER_LEAGUE",3600,0.990230550991014,0.568181818181818,0.842696629213483,0.662878787878788,178

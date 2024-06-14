@@ -1,6 +1,6 @@
 BASE_PATH = "~/pump-and-dump/"
 PLOTTING = FALSE
-TIMEFRAME_IN_SECONDS = 200000 #  If null the entire pump dataset is used
+TIMEFRAME_IN_SECONDS = 180000 #  If null the entire pump dataset is used
 
 library(dplyr)
 library(daltoolbox) 
