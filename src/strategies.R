@@ -52,72 +52,30 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
   
-  else if (strategy_name == "test") {
-    data <- preprocess_data(df, "PRICE_DIFF")
-    series <- data$series
-    model <- fit(build_model("GARCH"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[left + 1] <- FALSE
-    }
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    # RED
-    red <- fit(build_model("RED"), series)
-    red_detection <- detect(red, series)
-    red_event_true_indexes <- filter(red_detection, event == TRUE)$idx
-    red_detection_plus <- red_detection
-    for (index in red_event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      red_detection_plus$event[left] <- TRUE
-      red_detection_plus$event[left + 1] <- FALSE
-    }
+  else if (strategy_name == "SUPER_LEAGUE") {
+    result <- super_diff_detect(df)
+    super_diff_model <- result$model
+    super_diff_detection <- result$detection
+    super_diff_data <- result$dat
 
-    # SUPER_DIFF result
-    detection$event <- (detection$event & red_detection$event) | (detection$event & red_detection_plus$event)
-    super_diff_result <- detection
-    
-    # Master league
-    data <- preprocess_data(df, "VOLUME_CUMSUM")
-    series <- data$series
-    model <- fit(build_model("GFT"), series)
-    detection <- detect(model, series)
-    event_true_indexes <- filter(detection, event == TRUE)$idx
-    
-    for (index in event_true_indexes) {
-      left <- max(min(length(series), index - 1), 1)
-      right <- max(min(length(series), index + 1), 1)
-      detection$event[left] <- TRUE
-      detection$event[right] <- TRUE
+    result <- master_league_detect(df, "VOLUME_CUMSUM")
+    master_league_model <- result$model
+    master_league_detection <- result$detection
+    master_league_data <- result$data
+
+    # +1 because diff removes the first observation
+    super_diff_true_indexes <- (filter(super_diff_detection,
+                                       event == TRUE)$idx) + 1
+
+    if (length(super_diff_true_indexes) == 1 &&
+        master_league_detection$event[super_diff_true_indexes[1]] == TRUE) {
+      master_league_detection$event <- rep(FALSE,
+                                           length(master_league_detection$event))
+      master_league_detection$event[super_diff_true_indexes[1]] <- TRUE
     }
     
-    # Right Chow
-    volume_cumsum_df <- preprocess_data(df, "VOLUME_CUMSUM")
-    volume_cumsum <- volume_cumsum_df$series
-    chow <- fit(build_model("CHOW"), volume_cumsum)
-    chow_detection <- detect(chow, volume_cumsum)
-    event_true_indexes <- filter(chow_detection, event == TRUE)$idx
-    for (index in event_true_indexes) {
-      right <- max(min(length(volume_cumsum), index + 1), 1)
-      chow_detection$event[right] <- TRUE
-    }
-    
-    detection$event <- (detection$event & chow_detection$event)
-    detection$type <- chow_detection$type
-    
-    # Merge
-    supa_positive_indexes <- (filter(super_diff_result, event == TRUE)$idx) + 1
-    print(supa_positive_indexes)
-    if (length(supa_positive_indexes) == 1 && detection$event[supa_positive_indexes[1]] == TRUE) {
-      detection$event <- rep(FALSE, length(detection$event))
-      detection$event[supa_positive_indexes[1]] <- TRUE
-    }
-    
-    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
+    conf_matrix <- evaluate(master_league_model, master_league_detection$event,
+                            master_league_data$event)$confMatrix
   }
 
   else {
