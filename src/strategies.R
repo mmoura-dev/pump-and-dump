@@ -35,18 +35,11 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
   }
 
   else if (strategy_name == "MASTER_LEAGUE") {
-    result <- recall_gft_detect(df, series_name)
-    recall_gft <- result$model
-    recall_gft_detection <- result$detection
-    recall_gft_data <- result$data
-
-    result <- right_chow_detect(df, series_name)
-    right_chow_detection <- result$detection
-    
-    recall_gft_detection$event <- (recall_gft_detection$event & right_chow_detection$event)
-    recall_gft_detection$type <- right_chow_detection$type
-    conf_matrix <- evaluate(recall_gft, recall_gft_detection$event,
-                            recall_gft_data$event)$confMatrix
+    result <- master_league_detect(df, series_name)
+    model <- result$model
+    detection <- result$detection
+    data <- result$data
+    conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
 
   else if (strategy_name == "SUPER_DIFF") {
@@ -201,6 +194,26 @@ right_chow_detect <- function(df, series_name) {
     model = chow,
     detection = chow_detection,
     data = data
+  ))
+}
+
+master_league_detect <- function(df, series_name) {
+  result <- recall_gft_detect(df, series_name)
+  recall_gft <- result$model
+  recall_gft_detection <- result$detection
+  recall_gft_data <- result$data
+  
+  result <- right_chow_detect(df, series_name)
+  right_chow_detection <- result$detection
+  
+  recall_gft_detection$event <- (recall_gft_detection$event &
+                                   right_chow_detection$event)
+  recall_gft_detection$type <- right_chow_detection$type
+
+  return(list(
+    model = recall_gft,
+    detection = recall_gft_detection,
+    data = recall_gft_data
   ))
 }
 

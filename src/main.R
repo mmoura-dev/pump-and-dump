@@ -73,4 +73,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "SUPER_DIFF")
+pump_main(3600, "MASTER_LEAGUE", "VOLUME_CUMSUM")
