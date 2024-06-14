@@ -27,7 +27,7 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   la_morgia_used_files <- read.csv(
     paste0(BASE_PATH, "lamorgia/lamorgia_used_pumps.csv"))$file_name
   file_names <- la_morgia_used_files
-  # file_names <- file_names[1:10]
+  file_names <- file_names[1:17]
 
   hard_metrics <- data.frame(
     file_name = file_names,
@@ -65,12 +65,12 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
 
   print(result)
   current_datetime_str <- format(Sys.time(), "%d-%m-%Y_%H-%M-%S")
-  write.csv(result,
-            file = paste0(BASE_PATH, "results/", strategy_name, "_chunk-",
-                          chunk_size, "s_timeframe-", TIMEFRAME_IN_SECONDS, "_",
-                          current_datetime_str, ".csv"),
-            row.names = FALSE)
+  # write.csv(result,
+  #           file = paste0(BASE_PATH, "results/", strategy_name, "_chunk-",
+  #                         chunk_size, "s_timeframe-", TIMEFRAME_IN_SECONDS, "_",
+  #                         current_datetime_str, ".csv"),
+  #           row.names = FALSE)
   return(result)
 }
 
-pump_main(3600, "MASTER_LEAGUE")
+pump_main(3600, "LEFT_REMD", "PRICE")
