@@ -73,4 +73,4 @@ pump_main <- function(chunk_size, strategy_name, series_name = NULL) {
   return(result)
 }
 
-pump_main(3600, "DUMMY", "RUSH_ORDERS")
+pump_main(600, "REMD", "RUSH_ORDERS")

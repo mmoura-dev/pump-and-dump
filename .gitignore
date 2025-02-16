@@ -1,5 +1,7 @@
 # Custom
 cached_data/
+binance_pumps/
+lamorgia/binance_orders_history/
 
 # History files
 .Rhistory
