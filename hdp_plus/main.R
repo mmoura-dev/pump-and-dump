@@ -5,8 +5,8 @@ PLOTTING = FALSE # If the used method should generate pdf plots
 TIMEFRAME_SECONDS = 180000 #  If null the entire pump data set is used
 # Time interval around the event to be used in detection
 CHUNK_SIZE_SECONDS = 3600 # Interval for grouping observations
-STRATEGY_NAME = "HDP_CPD" # The event detection method
-DATA_PREPROCESSING_NAME = "VOLUME_CUMSUM" # Selects data preprocessing
+STRATEGY_NAME = "HDP_AD" # The event detection method
+DATA_PREPROCESSING_NAME = "PRICE_DIFF" # Selects data preprocessing
 LIVE_COIN_WATCH_API_KEY = Sys.getenv("LCW_API_KEY") # data enrichment api key
 
 # Instructions:
