@@ -1,0 +1,2 @@
+"strategy","chunk_size","avg_accuracy","avg_precision","avg_recall","avg_f1_score","support"
+"REMD_RUSH_ORDERS",3600,0.997501913710377,0.902956126270733,0.971910112359551,0.924063670411985,178
