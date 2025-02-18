@@ -92,6 +92,31 @@ get_strategy_result <- function(df, strategy_name, series_name = NULL) {
     series <- data$series
     conf_matrix <- evaluate(model, detection$event, data$event)$confMatrix
   }
+  
+  else if (strategy_name == "HDP_PLUS") {
+    # REMD_RUSH (anomaly detection)
+    ad_data <- preprocess_data(df, "RUSH_ORDERS")
+    rush_series <- ad_data$series
+    remd <- fit(build_model("REMD"), rush_series)
+    ad_detection <- detect(remd, rush_series)
+    
+    # HDP_CPD (change point detection)
+    result <- master_league_detect(df, "VOLUME_CUMSUM")
+    hdp_cpd_model <- result$model
+    hdp_cpd_detection <- result$detection
+    hdp_cpd_data <- result$data
+    series <- hdp_cpd_data$series
+    
+    # Ensemble
+    hdp_cpd_true_indexes <- filter(hdp_cpd_detection, event == TRUE)$idx
+    if (length(hdp_cpd_true_indexes) > 0 &&
+        ad_detection$event[hdp_cpd_true_indexes[1]] == TRUE) {
+      ad_detection$event <- rep(FALSE, length(ad_detection$event))
+      ad_detection$event[hdp_cpd_true_indexes[1]] <- TRUE
+    }
+    
+    conf_matrix <- evaluate(remd, ad_detection$event & hdp_cpd_detection$event, ad_data$event)$confMatrix
+  }
 
   else {
     stop(paste("Invalid strategy_name:", strategy_name))
@@ -276,6 +301,8 @@ find_outliers <- function(series, k) {
   return(result)
 }
 
+
+# Utils
 custom_plot <- function(model, series, detection, data) {
   plot_files <- basename(list.files(
     path = paste0(BASE_PATH, "plots"),

@@ -5,8 +5,8 @@ PLOTTING = FALSE # If the used method should generate pdf plots
 TIMEFRAME_SECONDS = 180000 #  If null the entire pump data set is used
 # Time interval around the event to be used in detection
 CHUNK_SIZE_SECONDS = 3600 # Interval for grouping observations
-STRATEGY_NAME = "HD_PUMP" # The event detection method
-DATA_PREPROCESSING_NAME = "VOLUME_CUMSUM" # Selects data preprocessing
+STRATEGY_NAME = "HDP_PLUS" # The event detection method
+DATA_PREPROCESSING_NAME = NULL # Selects data preprocessing
 LIVE_COIN_WATCH_API_KEY = Sys.getenv("LCW_API_KEY") # data enrichment api key
 
 # Instructions:
@@ -76,8 +76,8 @@ main <- function() {
   current_datetime_str <- format(Sys.time(), "%d-%m-%YT%H-%M-%S")
   write.csv(result,
             file = paste0("results/hdp_plus/", STRATEGY_NAME, "_chunk-",
-                          CHUNK_SIZE_SECONDS, "s_timeframe-", TIMEFRAME_SECONDS, "s_",
-                          current_datetime_str, ".csv"),
+                          CHUNK_SIZE_SECONDS, "s_timeframe-", TIMEFRAME_SECONDS,
+                          "s_", current_datetime_str, ".csv"),
             row.names = FALSE)
   return(result)
 }
