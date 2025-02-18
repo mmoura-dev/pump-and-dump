@@ -28,10 +28,10 @@ library(jsonlite)
 
 source("hdp_plus/data_enrichment.R")
 source("hdp_plus/pump_series.R")
-# source("src/preprocessing.R")
-# source("src/model_factory.R")
-# source("src/strategies.R")
-# source("src/metrics.R")
+source("hdp_plus/preprocessing.R")
+source("hdp_plus/model_factory.R")
+source("hdp_plus/strategies.R")
+source("hdp_plus/metrics.R")
 
 main <- function() {
   
@@ -64,7 +64,7 @@ main <- function() {
   hard_metrics <- calculate_metrics(confusion_matrices)
   result <- data.frame(
     strategy = STRATEGY_NAME,
-    chunk_size = chunk_size,
+    chunk_size = CHUNK_SIZE_SECONDS,
     avg_accuracy = mean(hard_metrics$accuracy, na.rm = TRUE),
     avg_precision = mean(hard_metrics$precision, na.rm = TRUE),
     avg_recall = mean(hard_metrics$recall, na.rm = TRUE),
@@ -76,7 +76,7 @@ main <- function() {
   current_datetime_str <- format(Sys.time(), "%d-%m-%YT%H-%M-%S")
   write.csv(result,
             file = paste0("results/hdp_plus/", STRATEGY_NAME, "_chunk-",
-                          CHUNK_SIZE_SECONDS, "s_timeframe-", TIMEFRAME_IN_SECONDS, "s_",
+                          CHUNK_SIZE_SECONDS, "s_timeframe-", TIMEFRAME_SECONDS, "s_",
                           current_datetime_str, ".csv"),
             row.names = FALSE)
   return(result)
