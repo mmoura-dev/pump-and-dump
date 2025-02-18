@@ -1,0 +1,2 @@
+"strategy","chunk_size","avg_accuracy","avg_precision","avg_recall","avg_f1_score","support"
+"HD_PUMP_VOLUME_CUMSUM",3600,0.99140767267811,0.625,0.904494382022472,0.721590909090909,178
