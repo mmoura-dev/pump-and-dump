@@ -292,8 +292,8 @@ find_outliers <- function(series, k) {
       next_sd <- 0
     }
 
-    if (abs(series[i] - prev_mean) > prev_sd &&
-        abs(series[i] - next_mean) > next_sd) {
+    if (abs(series[i] - prev_mean) > (3 * prev_sd) &&
+        abs(series[i] - next_mean) > (3 * next_sd)) {
       result[i] <- TRUE
     }
   }
@@ -305,7 +305,7 @@ find_outliers <- function(series, k) {
 # Utils
 custom_plot <- function(model, series, detection, data) {
   plot_files <- basename(list.files(
-    path = paste0(BASE_PATH, "plots"),
+    path = paste0("plots"),
     pattern = "^plot_\\d+.pdf",
     full.names = FALSE))
   plot_number <- 1
@@ -316,7 +316,7 @@ custom_plot <- function(model, series, detection, data) {
   }
   
   grf <- har_plot(model, series, detection, data$event)
-  ggsave(paste0(BASE_PATH, "plots/plot_", plot_number, ".pdf"), plot = grf)
+  ggsave(paste0("plots/plot_", plot_number, ".pdf"), plot = grf)
 }
 
 change_point_series_name_validation <- function(series_name) {
