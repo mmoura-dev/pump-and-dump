@@ -1,0 +1,2 @@
+"strategy","chunk_size","avg_accuracy","avg_precision","avg_recall","avg_f1_score","support"
+"DUMMY_PRICE_DIFF",3600,0.984474766849333,0.406308851224105,0.691011235955056,0.492655367231638,178
