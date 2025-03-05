@@ -35,6 +35,10 @@ preprocess_data <- function(df, series_name) {
     series_column <- diff(df$rush_orders)
     event_column <- event_column[2:length(event_column)]
   }
+  
+  else if (series_name == "RUSH_CUMSUM") {
+    series_column <- cumsum(df$rush_orders)
+  }
 
   else {
     stop("Invalid: series_name")

@@ -320,7 +320,7 @@ custom_plot <- function(model, series, detection, data) {
 }
 
 change_point_series_name_validation <- function(series_name) {
-  if (!(series_name %in% c("ORDERS_CUMSUM", "VOLUME_CUMSUM"))) {
+  if (!(series_name %in% c("ORDERS_CUMSUM", "VOLUME_CUMSUM", "RUSH_CUMSUM"))) {
     print(paste("series_name:", series_name))
     stop("Invalid series_name for change point strategy.")
   }
